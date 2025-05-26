@@ -508,3 +508,28 @@ if (window.location.pathname.includes('register.html')) {
         window.location.href = "login.html";
     });
 }
+// Inside your login form event listener in script.js
+document.getElementById('login-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    // Updated user verification - checks localStorage for registered users
+    const validUsers = JSON.parse(localStorage.getItem('library-users')) || [
+        // Default fallback users (remove in production)
+        { username: "admin", password: "admin123", role: "librarian" },
+        { username: "user", password: "user123", role: "member" }
+    ];
+    
+    const user = validUsers.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('userRole', user.role || 'member'); // Default to 'member' if no role exists
+        sessionStorage.setItem('username', username);
+        window.location.href = "index.html";
+    } else {
+        document.getElementById('error-msg').textContent = "Invalid username or password!";
+    }
+});
