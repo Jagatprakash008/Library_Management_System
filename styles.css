@@ -307,3 +307,16 @@ footer {
     margin-top: 1rem;
     font-size: 0.9rem;
 }
+.create-account {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.create-account a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.create-account a:hover {
+    text-decoration: underline;
+}
