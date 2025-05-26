@@ -362,3 +362,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize date fields
     document.getElementById('issue-date').valueAsDate = new Date();
 });
+// Add this at the START of your script.js
+// Check login status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Redirect to login if not authenticated
+    if (!sessionStorage.getItem('loggedIn')) {
+        window.location.href = 'login.html';
+    }
+    
+    // Display username if available
+    const username = sessionStorage.getItem('username');
+    if (username) {
+        document.getElementById('logged-in-user').textContent = username;
+    }
+    
+    // Rest of your existing code...
+});
+
+// Add this at the END of your script.js
+// Logout functionality
+document.getElementById('logout-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Clear session data
+    sessionStorage.removeItem('loggedIn');
+    sessionStorage.removeItem('userRole');
+    sessionStorage.removeItem('username');
+    
+    // Redirect to login page
+    window.location.href = 'login.html';
+});
