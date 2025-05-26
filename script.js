@@ -450,3 +450,61 @@ document.getElementById('logout-btn').addEventListener('click', function(e) {
     // Redirect to login page
     window.location.href = 'login.html';
 });
+/***********************
+ * REGISTRATION SYSTEM *
+ ***********************/
+
+// OTP storage (in real app, use server-side storage)
+let generatedOTP = null;
+let otpExpiry = null;
+
+// Registration page logic
+if (window.location.pathname.includes('register.html')) {
+    const registerForm = document.getElementById('register-form');
+    const sendOTPBtn = document.getElementById('send-otp');
+    const otpGroup = document.getElementById('otp-group');
+    const registerBtn = document.getElementById('register-btn');
+    
+    // Simulate OTP sending
+    sendOTPBtn.addEventListener('click', function() {
+        const phone = document.getElementById('reg-phone').value;
+        
+        if (!phone || phone.length < 10) {
+            document.getElementById('reg-error').textContent = "Please enter a valid phone number";
+            return;
+        }
+        
+        // Generate random 6-digit OTP
+        generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        otpExpiry = Date.now() + 300000; // OTP valid for 5 minutes
+        
+        // In real app, send this OTP via SMS API (Twilio, etc.)
+        alert(`[DEMO] OTP sent to ${phone}: ${generatedOTP}`);
+        
+        otpGroup.style.display = 'block';
+        registerBtn.disabled = false;
+    });
+    
+    // Handle registration
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const otp = document.getElementById('otp').value;
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        
+        // Verify OTP
+        if (otp !== generatedOTP || Date.now() > otpExpiry) {
+            document.getElementById('reg-error').textContent = "Invalid or expired OTP";
+            return;
+        }
+        
+        // Save user (in real app, send to server)
+        const users = JSON.parse(localStorage.getItem('library-users') || [];
+        users.push({ username, password, phone: document.getElementById('reg-phone').value });
+        localStorage.setItem('library-users', JSON.stringify(users));
+        
+        alert("Registration successful! Please login.");
+        window.location.href = "login.html";
+    });
+}
