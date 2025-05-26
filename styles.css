@@ -39,7 +39,16 @@ nav ul {
     display: flex;
     list-style: none;
 }
+/* Existing nav styles */
+nav ul {
+    display: flex;
+    list-style: none;
+}
 
+/* NEW CODE: Add these lines JUST BELOW the existing nav ul */
+nav ul {
+    align-items: center; /* Vertically center items */
+}
 nav ul li a {
     color: white;
     text-decoration: none;
@@ -220,4 +229,17 @@ footer {
     .stat-card {
         width: 100%;
     }
+}
+/* NEW CODE: Add this anywhere (preferably near other button styles) */
+#logout-btn {
+    background-color: #e74c3c;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-left: auto; /* Pushes button to far right */
+    color: white; /* Text color */
+    text-decoration: none; /* Removes underline */
+}
+
+#logout-btn:hover {
+    background-color: #c0392b;
 }
