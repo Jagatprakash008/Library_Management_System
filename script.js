@@ -1,3 +1,61 @@
+/************************
+ * AUTHENTICATION SYSTEM *
+ ************************/
+
+// Check if we're on the login page
+if (window.location.pathname.includes('login.html')) {
+    // Login form handler
+    document.getElementById('login-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        // Demo users - replace with real database in production
+        const validUsers = [
+            { username: "admin", password: "admin123", role: "librarian" },
+            { username: "user", password: "user123", role: "member" }
+        ];
+        
+        const user = validUsers.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+            // Store user session
+            sessionStorage.setItem('loggedIn', 'true');
+            sessionStorage.setItem('userRole', user.role);
+            sessionStorage.setItem('username', username);
+            
+            // Redirect to main page
+            window.location.href = "index.html";
+        } else {
+            document.getElementById('error-msg').textContent = "Invalid username or password!";
+        }
+    });
+}
+// For all other pages - check authentication
+else {
+    // Redirect to login if not authenticated
+    if (!sessionStorage.getItem('loggedIn')) {
+        window.location.href = 'login.html';
+    }
+    
+    // Display username if available
+    const username = sessionStorage.getItem('username');
+    if (username && document.getElementById('logged-in-user')) {
+        document.getElementById('logged-in-user').textContent = username;
+    }
+    
+    // Logout functionality
+    document.getElementById('logout-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Clear session data
+        sessionStorage.clear();
+        
+        // Redirect to login page
+        window.location.href = 'login.html';
+    });
+}
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
     const tabs = document.querySelectorAll('nav a');
