@@ -1,34 +1,40 @@
 /************************
  * AUTHENTICATION SYSTEM *
  ************************/
-// Session and user management
+// Global variables
 let generatedOTP = null;
 let otpExpiry = null;
 
-// Check if we're on the login page
-if (window.location.pathname.includes('login.html')) {
-    setupLoginPage();
-} 
-// Check if we're on the registration page
-else if (window.location.pathname.includes('register.html')) {
-    setupRegistrationPage();
-} 
-// For all other pages - check authentication
-else {
-    checkAuthentication();
+// Initialize auth system based on current page
+function initializeAuthSystem() {
+    if (window.location.pathname.includes('login.html')) {
+        setupLoginPage();
+    } 
+    else if (window.location.pathname.includes('register.html')) {
+        setupRegistrationPage();
+    }
+    else {
+        checkAuthentication();
+    }
 }
 
-/**********************
- * PAGE SETUP FUNCTIONS *
- **********************/
 function setupLoginPage() {
-    document.getElementById('login-form')?.addEventListener('submit', function(e) {
+    const loginForm = document.getElementById('login-form');
+    if (!loginForm) return;
+
+    loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
         
-        // Get users from localStorage or use defaults
+        // Input validation
+        if (!username || !password) {
+            showLoginError("Please enter both username and password");
+            return;
+        }
+        
+        // Get registered users from localStorage or use defaults
         const validUsers = JSON.parse(localStorage.getItem('library-users')) || [
             { username: "admin", password: "admin123", role: "librarian" },
             { username: "user", password: "user123", role: "member" }
@@ -37,16 +43,19 @@ function setupLoginPage() {
         const user = validUsers.find(u => u.username === username && u.password === password);
         
         if (user) {
-            // Store user session
+            // Successful login
             sessionStorage.setItem('loggedIn', 'true');
-            sessionStorage.setItem('userRole', user.role);
+            sessionStorage.setItem('userRole', user.role || 'member');
             sessionStorage.setItem('username', username);
-            
-            // Redirect to main page
             window.location.href = "index.html";
         } else {
-            document.getElementById('error-msg').textContent = "Invalid username or password!";
+            showLoginError("Invalid credentials. Don't have an account? <a href='register.html'>Create one</a>");
         }
+    });
+    
+    // Switch to registration view
+    document.getElementById('show-register')?.addEventListener('click', function() {
+        window.location.href = "register.html";
     });
 }
 
@@ -56,52 +65,76 @@ function setupRegistrationPage() {
     const otpGroup = document.getElementById('otp-group');
     const registerBtn = document.getElementById('register-btn');
     
+    if (!registerForm) return;
+
     // Simulate OTP sending
-    sendOTPBtn.addEventListener('click', function() {
-        const phone = document.getElementById('reg-phone').value;
+    sendOTPBtn?.addEventListener('click', function() {
+        const phone = document.getElementById('reg-phone').value.trim();
         
         if (!phone || phone.length < 10) {
-            document.getElementById('reg-error').textContent = "Please enter a valid phone number";
+            showRegistrationError("Please enter a valid 10-digit phone number");
             return;
         }
         
         // Generate random 6-digit OTP
         generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        otpExpiry = Date.now() + 300000; // OTP valid for 5 minutes
+        otpExpiry = Date.now() + 300000; // 5 minutes expiry
         
-        // In real app, send this OTP via SMS API (Twilio, etc.)
+        // In real app, send via SMS API (Twilio, etc.)
         alert(`[DEMO] OTP sent to ${phone}: ${generatedOTP}`);
         
-        otpGroup.style.display = 'block';
-        registerBtn.disabled = false;
+        if (otpGroup) otpGroup.style.display = 'block';
+        if (registerBtn) registerBtn.disabled = false;
     });
     
     // Handle registration
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const otp = document.getElementById('otp').value;
-        const username = document.getElementById('reg-username').value;
-        const password = document.getElementById('reg-password').value;
+        const otp = document.getElementById('otp')?.value;
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const phone = document.getElementById('reg-phone')?.value.trim();
         
-        // Verify OTP
-        if (otp !== generatedOTP || Date.now() > otpExpiry) {
-            document.getElementById('reg-error').textContent = "Invalid or expired OTP";
+        // Input validation
+        if (!username || !password) {
+            showRegistrationError("Username and password are required");
             return;
         }
         
-        // Save user
+        // OTP verification
+        if (otp !== generatedOTP || Date.now() > otpExpiry) {
+            showRegistrationError("Invalid or expired OTP");
+            return;
+        }
+        
+        // Get existing users
         const users = JSON.parse(localStorage.getItem('library-users')) || [];
-        users.push({ 
-            username, 
-            password, 
-            phone: document.getElementById('reg-phone').value,
-            role: "member" // Default role for new users
-        });
+        
+        // Check if username exists
+        if (users.some(u => u.username === username)) {
+            showRegistrationError("Username already exists");
+            return;
+        }
+        
+        // Create new user
+        const newUser = {
+            username,
+            password,
+            phone: phone || '',
+            role: "member",
+            joinDate: new Date().toISOString()
+        };
+        
+        // Save user
+        users.push(newUser);
         localStorage.setItem('library-users', JSON.stringify(users));
         
-        alert("Registration successful! Please login.");
-        window.location.href = "login.html";
+        // Auto-login after registration
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('userRole', newUser.role);
+        sessionStorage.setItem('username', newUser.username);
+        window.location.href = "index.html";
     });
 }
 
@@ -112,25 +145,41 @@ function checkAuthentication() {
         return;
     }
     
-    // Display username if available
+    // Display username in navigation
     const username = sessionStorage.getItem('username');
     if (username && document.getElementById('logged-in-user')) {
         document.getElementById('logged-in-user').textContent = username;
     }
     
-    // Logout functionality
+    // Setup logout functionality
     document.getElementById('logout-btn')?.addEventListener('click', function(e) {
         e.preventDefault();
         sessionStorage.clear();
         window.location.href = 'login.html';
     });
-    
-    // Initialize main application if authenticated
-    initializeApplication();
+}
+
+// Helper functions
+function showLoginError(message) {
+    const errorElement = document.getElementById('error-msg');
+    if (errorElement) {
+        errorElement.innerHTML = message;
+    } else {
+        alert(message.replace(/<[^>]*>/g, '')); // Fallback with stripped HTML
+    }
+}
+
+function showRegistrationError(message) {
+    const errorElement = document.getElementById('reg-error');
+    if (errorElement) {
+        errorElement.textContent = message;
+    } else {
+        alert(message);
+    }
 }
 
 /**********************
- * MAIN APPLICATION *
+ * MAIN APPLICATION   *
  **********************/
 function initializeApplication() {
     // Tab switching functionality
@@ -189,16 +238,25 @@ function refreshTabData(sectionId) {
 }
 
 function setupBookForm() {
-    document.getElementById('book-form').addEventListener('submit', function(e) {
+    const bookForm = document.getElementById('book-form');
+    if (!bookForm) return;
+
+    bookForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const book = {
-            id: document.getElementById('book-id').value,
-            title: document.getElementById('book-title').value,
-            author: document.getElementById('book-author').value,
-            isbn: document.getElementById('book-isbn').value,
+            id: document.getElementById('book-id').value.trim(),
+            title: document.getElementById('book-title').value.trim(),
+            author: document.getElementById('book-author').value.trim(),
+            isbn: document.getElementById('book-isbn').value.trim(),
             status: document.getElementById('book-status').value
         };
+        
+        // Validation
+        if (!book.id || !book.title || !book.author) {
+            alert('Please fill in all required book fields');
+            return;
+        }
         
         saveBook(book);
         this.reset();
@@ -207,15 +265,24 @@ function setupBookForm() {
 }
 
 function setupMemberForm() {
-    document.getElementById('member-form').addEventListener('submit', function(e) {
+    const memberForm = document.getElementById('member-form');
+    if (!memberForm) return;
+
+    memberForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const member = {
-            id: document.getElementById('member-id').value,
-            name: document.getElementById('member-name').value,
-            email: document.getElementById('member-email').value,
-            phone: document.getElementById('member-phone').value
+            id: document.getElementById('member-id').value.trim(),
+            name: document.getElementById('member-name').value.trim(),
+            email: document.getElementById('member-email').value.trim(),
+            phone: document.getElementById('member-phone').value.trim()
         };
+        
+        // Validation
+        if (!member.id || !member.name) {
+            alert('Please fill in all required member fields');
+            return;
+        }
         
         saveMember(member);
         this.reset();
@@ -224,7 +291,10 @@ function setupMemberForm() {
 }
 
 function setupTransactionForm() {
-    document.getElementById('transaction-form').addEventListener('submit', function(e) {
+    const transactionForm = document.getElementById('transaction-form');
+    if (!transactionForm) return;
+
+    transactionForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const transaction = {
@@ -235,6 +305,12 @@ function setupTransactionForm() {
             status: document.getElementById('return-date').value ? 'Returned' : 'Issued'
         };
         
+        // Validation
+        if (!transaction.bookId || !transaction.memberId) {
+            alert('Please select both a book and a member');
+            return;
+        }
+        
         issueBook(transaction);
         this.reset();
         fetchTransactions();
@@ -242,7 +318,7 @@ function setupTransactionForm() {
         updateDashboardStats();
     });
 
-    document.getElementById('return-btn').addEventListener('click', handleBookReturn);
+    document.getElementById('return-btn')?.addEventListener('click', handleBookReturn);
 }
 
 function handleBookReturn() {
@@ -280,7 +356,7 @@ function handleBookReturn() {
 }
 
 /**********************
- * DATA MANAGEMENT *
+ * DATA MANAGEMENT    *
  **********************/
 // Book functions
 function getBooks() {
@@ -308,6 +384,8 @@ function deleteBook(id) {
 function fetchBooks() {
     const books = getBooks();
     const booksList = document.getElementById('books-list');
+    if (!booksList) return;
+
     booksList.innerHTML = '';
     
     books.forEach(book => {
@@ -387,6 +465,8 @@ function deleteMember(id) {
 function fetchMembers() {
     const members = getMembers();
     const membersList = document.getElementById('members-list');
+    if (!membersList) return;
+
     membersList.innerHTML = '';
     
     members.forEach(member => {
@@ -466,6 +546,8 @@ function issueBook(transaction) {
 function fetchTransactions() {
     const transactions = getTransactions();
     const transactionsList = document.getElementById('transactions-list');
+    if (!transactionsList) return;
+
     transactionsList.innerHTML = '';
     
     transactions.forEach(trans => {
@@ -488,6 +570,8 @@ function fetchTransactions() {
 // Dropdown functions
 function populateBookDropdown() {
     const bookSelect = document.getElementById('transaction-book');
+    if (!bookSelect) return;
+
     bookSelect.innerHTML = '<option value="">Select Book</option>';
     
     getBooks()
@@ -502,6 +586,8 @@ function populateBookDropdown() {
 
 function populateMemberDropdown() {
     const memberSelect = document.getElementById('transaction-member');
+    if (!memberSelect) return;
+
     memberSelect.innerHTML = '<option value="">Select Member</option>';
     
     getMembers().forEach(member => {
@@ -515,8 +601,24 @@ function populateMemberDropdown() {
 // Dashboard functions
 function updateDashboardStats() {
     const books = getBooks();
-    document.getElementById('total-books').textContent = books.length;
-    document.getElementById('total-members').textContent = getMembers().length;
-    document.getElementById('books-issued').textContent = 
-        books.filter(b => b.status === 'Issued').length;
+    const totalBooksEl = document.getElementById('total-books');
+    const totalMembersEl = document.getElementById('total-members');
+    const booksIssuedEl = document.getElementById('books-issued');
+    
+    if (totalBooksEl) totalBooksEl.textContent = books.length;
+    if (totalMembersEl) totalMembersEl.textContent = getMembers().length;
+    if (booksIssuedEl) booksIssuedEl.textContent = books.filter(b => b.status === 'Issued').length;
 }
+
+/**********************
+ * INITIALIZATION     *
+ **********************/
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAuthSystem();
+    
+    // Only initialize main app if we're not on auth pages
+    if (!window.location.pathname.includes('login.html') && 
+        !window.location.pathname.includes('register.html')) {
+        initializeApplication();
+    }
+});
