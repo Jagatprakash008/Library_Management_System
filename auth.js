@@ -1,25 +1,25 @@
+// For GUVI - auth.js
+
 document.getElementById('login-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    // Hardcoded credentials (replace with database check in real app)
-    const validUsers = [
-        { username: "admin", password: "admin123", role: "librarian" },
-        { username: "user", password: "user123", role: "member" }
-    ];
-    
-    const user = validUsers.find(u => u.username === username && u.password === password);
-    
-    if (user) {
-        // Save user session (in real app, use JWT/localStorage securely)
-        sessionStorage.setItem('loggedIn', 'true');
-        sessionStorage.setItem('userRole', user.role);
-        
-        // Redirect to main page
-        window.location.href = "index.html";
+
+    const enteredUsername = document.getElementById('username').value;
+    const enteredPassword = document.getElementById('password').value;
+
+    const storedUser = JSON.parse(localStorage.getItem('user')); // Single user object
+
+    const errorMsg = document.getElementById('error-msg');
+
+    if (storedUser &&
+        enteredUsername === storedUser.username &&
+        enteredPassword === storedUser.password) {
+        // Login successful
+        errorMsg.style.color = 'green';
+        errorMsg.textContent = 'Login successful!';
+        window.location.href = 'dashboard.html'; // Redirect to home/dashboard
     } else {
-        document.getElementById('error-msg').textContent = "Invalid username or password!";
+        // Login failed
+        errorMsg.style.color = 'red';
+        errorMsg.textContent = 'Invalid username or password';
     }
 });
