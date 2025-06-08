@@ -1,150 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Library Management - Add Student</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Library Management System</h1>
-        </header>
-        
-        <nav>
-            <ul>
-                <li><a href="#" class="active" id="home-tab">Home</a></li>
-                <li><a href="#" id="books-tab">Books</a></li>
-                <li><a href="#" id="members-tab">Members</a></li>
-                <li><a href="#" id="transactions-tab">Transactions</a></li>
-            </ul>
-        </nav>
-        
-        <main>
-            <section id="home-section" class="active-section">
-                <h2>Welcome to Our Library</h2>
-                <p>Manage your library efficiently with this system.</p>
-                <div class="stats">
-                    <div class="stat-card">
-                        <h3>Total Books</h3>
-                        <p id="total-books">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Members</h3>
-                        <p id="total-members">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Books Issued</h3>
-                        <p id="books-issued">0</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="books-section">
-                <h2>Book Management</h2>
-                <div class="form-container">
-                    <form id="book-form">
-                        <input type="text" id="book-id" placeholder="Book ID" required>
-                        <input type="text" id="book-title" placeholder="Title" required>
-                        <input type="text" id="book-author" placeholder="Author" required>
-                        <input type="text" id="book-isbn" placeholder="ISBN" required>
-                        <select id="book-status">
-                            <option value="Available">Available</option>
-                            <option value="Issued">Issued</option>
-                        </select>
-                        <button type="submit">Add/Update Book</button>
-                    </form>
-                </div>
-                <div class="table-container">
-                    <table id="books-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Author</th>
-                                <th>ISBN</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="books-list">
-                            <!-- Books will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            
-            <section id="members-section">
-                <h2>Member Management</h2>
-                <div class="form-container">
-                    <form id="member-form">
-                        <input type="text" id="member-id" placeholder="Member ID" required>
-                        <input type="text" id="member-name" placeholder="Name" required>
-                        <input type="email" id="member-email" placeholder="Email" required>
-                        <input type="tel" id="member-phone" placeholder="Phone" required>
-                        <button type="submit">Add/Update Member</button>
-                    </form>
-                </div>
-                <div class="table-container">
-                    <table id="members-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="members-list">
-                            <!-- Members will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            
-            <section id="transactions-section">
-                <h2>Transaction Management</h2>
-                <div class="form-container">
-                    <form id="transaction-form">
-                        <select id="transaction-book" required>
-                            <option value="">Select Book</option>
-                        </select>
-                        <select id="transaction-member" required>
-                            <option value="">Select Member</option>
-                        </select>
-                        <input type="date" id="issue-date" required>
-                        <input type="date" id="return-date">
-                        <button type="submit" id="issue-btn">Issue Book</button>
-                        <button type="button" id="return-btn">Return Book</button>
-                    </form>
-                </div>
-                <div class="table-container">
-                    <table id="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Transaction ID</th>
-                                <th>Book</th>
-                                <th>Member</th>
-                                <th>Issue Date</th>
-                                <th>Return Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactions-list">
-                            <!-- Transactions will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-        
-        <footer>
-            <p>&copy; 2025 Library Management System</p>
-        </footer>
-    </div>
-    
-    <script src="script.js"></script>
+  <div class="navbar">
+    <button onclick="navigate('student')">New Student</button>
+    <button onclick="navigate('book')">New Book</button>
+    <button onclick="navigate('stats')">Statistics</button>
+    <button onclick="navigate('issue')">Issue Book</button>
+    <button onclick="navigate('return')">Return Book</button>
+    <button onclick="navigate('delete')">Delete Student</button>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="form-container">
+    <h2>Add New Student</h2>
+    <form id="studentForm">
+      <input type="text" placeholder="Student ID" id="studentId" required />
+      <input type="text" placeholder="Name" id="name" required />
+      <input type="text" placeholder="Father Name" id="fatherName" required />
+      <select id="course">
+        <option>B.Tech</option>
+        <option>M.Tech</option>
+      </select>
+      <select id="branch">
+        <option>CSE</option>
+        <option>ECE</option>
+        <option>ME</option>
+      </select>
+      <div class="buttons">
+        <button type="submit">Save</button>
+        <button type="reset">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
