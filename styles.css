@@ -7,9 +7,13 @@
 }
 
 body {
-    background-color: #f5f5f5;
+    margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794') no-repeat center center/cover;
+  color: white;
+   /* background-color: #f5f5f5;
     color: #333;
-    line-height: 1.6;
+    line-height: 1.6; */
 }
 
 .container {
